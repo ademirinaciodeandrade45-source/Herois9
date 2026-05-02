@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🦸 SuperHero Party Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #1e3c72;
+            --primary-light: #2a5298;
+            --accent: #dc143c;
+            --accent-light: #f5576c;
+            --gradient1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient3: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --bg: #0f0c29;
+            --card-bg: #1a1a3e;
+            --text: #ffffff;
+            --text-muted: #a0a0c0;
+            --danger: #eb3349;
+            --success: #11998e;
+            --warning: #ffc107;
+            --shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        .mobile-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-header .logo {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hamburger {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2.5px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+        .menu-overlay.active { display: block; }
+
+        .side-menu {
+            position: fixed;
+            top: 0; left: -280px;
+            width: 280px; height: 100%;
+            background: linear-gradient(180deg, #1a1a3e 0%, #0f0c29 100%);
+            z-index: 1001;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.5);
+        }
+        .side-menu.active { left: 0; }
+
+        .side-menu-header {
+            padding: 60px 20px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .hero-collage {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .hero-collage img {
+            width: 100%;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: #2a2a4a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .side-menu-header h3 { color: white; font-size: 1.1em; }
+        .side-menu-header p { color: rgba(255,255,255,0.7); font-size: 0.8em; margin-top: 5px; }
+
+        .side-menu-list { padding: 15px 0; }
+
+        .side-menu-item {
+            display: flex; align-items: center;
+            padding: 14px 25px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            font-size: 0.95em;
+        }
+        .side-menu-item:hover, .side-menu-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: white;
+            border-left-color: #667eea;
+        }
+        .side-menu-item .menu-icon {
+            font-size: 1.3em;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0;
+            width: 100%;
+            background: #1a1a3e;
+            display: flex; justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .bottom-nav-item {
+            display: flex; flex-direction: column;
+            align-items: center;
+            padding: 6px 10px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            border-radius: 12px;
+            min-width: 60px;
+            position: relative;
+        }
+        .bottom-nav-item.active { color: #667eea; }
+        .bottom-nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -8px; left: 50%;
+            transform: translateX(-50%);
+            width: 30px; height: 3px;
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .bottom-nav-item .nav-icon { font-size: 1.4em; margin-bottom: 3px; }
+        .bottom-nav-item .nav-label {
+            font-size: 0.65em;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .bottom-nav-item.more-btn { color: var(--accent); }
+
+        .section {
+            display: none;
+            padding: 15px;
+            animation: fadeSlideIn 0.4s ease;
+        }
+        .section.active { display: block; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.3em; font-weight: 700;
+            color: white; margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .card-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card:active { transform: scale(0.96); }
+        .card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+        }
+        .card.selected::before { opacity: 1; }
+
+        .card-image {
+            width: 100%; height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .card-icon { font-size: 2.2em; margin-bottom: 8px; }
+        .card h3 { font-size: 0.85em; color: white; margin-bottom: 4px; }
+        .card p { font-size: 0.7em; color: var(--text-muted); line-height: 1.3; }
+
+        .card-check {
+            position: absolute; top: 8px; right: 8px;
+            width: 22px; height: 22px;
+            background: #667eea;
+            border-radius: 50%;
+            display: none;
+            align-items: center; justify-content: center;
+            font-size: 0.7em; color: white;
+            z-index: 10;
+        }
+        .card.selected .card-check { display: flex; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px 14px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .stat-card.blue::after { background: var(--gradient1); }
+        .stat-card.green::after { background: var(--gradient3); }
+        .stat-card.red::after { background: var(--gradient2); }
+        .stat-card.gold::after { background: linear-gradient(90deg, #f093fb, #ffd700); }
+
+        .stat-number { font-size: 1.8em; font-weight: 800; color: white; margin: 5px 0; }
+        .stat-label {
+            font-size: 0.7em; color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 4px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 28px;
+            border-radius: 10px;
+            background: var(--gradient1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75em; font-weight: 700; color: white;
+            transition: width 0.6s ease;
+            min-width: 50px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; margin-bottom: 6px;
+            color: var(--text-muted);
+            font-size: 0.8em; font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 13px 15px;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white; font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #667eea;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+        .form-group select option { background: #1a1a3e; color: white; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border: none; border-radius: 12px;
+            font-size: 0.9em; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--gradient1); color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: var(--gradient3); color: white;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(235, 51, 73, 0.4);
+        }
+        .btn-warning { background: var(--gradient2); color: white; }
+        .btn-sm { padding: 10px 16px; font-size: 0.75em; width: auto; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-group .btn { flex: 1; }
+
+        .checklist-item {
+            display: flex; align-items: center;
+            padding: 14px; margin: 8px 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .checklist-item:active { background: rgba(102, 126, 234, 0.15); }
+        .checklist-item.checked { opacity: 0.5; border-color: var(--success); }
+        .checklist-item.checked span { text-decoration: line-through; }
+
+        .check-box {
+            width: 24px; height: 24px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            margin-right: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .checklist-item.checked .check-box {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        .checklist-item span { font-size: 0.9em; line-height: 1.4; }
+
+        .mobile-table { margin-top: 15px; }
+
+        .mobile-table-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .mobile-table-card .table-name { font-weight: 700; font-size: 1em; color: white; margin-bottom: 5px; }
+        .mobile-table-card .table-detail { font-size: 0.8em; color: var(--text-muted); margin-bottom: 3px; }
+        .mobile-table-card .table-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7em; font-weight: 700;
+        }
+        .status-badge.confirmed { background: rgba(56, 239, 125, 0.2); color: #38ef7d; }
+        .status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-badge.declined { background: rgba(235, 51, 73, 0.2); color: #eb3349; }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px; margin: 10px 0;
+            border-left: 4px solid var(--accent);
+            cursor: pointer; transition: all 0.3s;
+        }
+        .game-card:active { transform: scale(0.98); }
+        .game-card h4 { color: white; font-size: 1em; margin-bottom: 6px; }
+        .game-card p { color: var(--text-muted); font-size: 0.8em; line-height: 1.4; }
+
+        .budget-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px; margin: 8px 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .budget-item .item-name { font-size: 0.9em; color: white; }
+        .budget-item .item-value { font-weight: 700; color: #38ef7d; font-size: 0.95em; }
+
+        .budget-total {
+            background: var(--gradient1);
+            color: white; padding: 20px;
+            border-radius: 14px;
+            text-align: center; margin-top: 20px;
+        }
+        .budget-total .total-label { font-size: 0.8em; opacity: 0.8; text-transform: uppercase; }
+        .budget-total .total-value { font-size: 2em; font-weight: 800; }
+
+        .invitation-preview {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 25px 20px;
+            border-radius: 16px;
+            text-align: center; margin: 20px 0;
+            border: 2px solid #ffd700;
+            position: relative; overflow: hidden;
+        }
+        .invitation-preview::before {
+            content: '⚡';
+            position: absolute; top: 10px; right: 15px;
+            font-size: 1.5em;
+            animation: pulse 1.5s infinite;
+        }
+        .invitation-preview::after {
+            content: '💥';
+            position: absolute; bottom: 10px; left: 15px;
+            font-size: 1.5em;
+            animation: pulse 1.5s infinite 0.5s;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        .invitation-preview h2 {
+            color: #ffd700; font-size: 1.4em;
+            margin-bottom: 15px; border: none; padding: 0;
+        }
+        .invitation-preview .hero-image-large {
+            width: 150px; height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #ffd700;
+            margin: 15px auto;
+            display: block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .invitation-preview p { color: white; font-size: 0.9em; line-height: 1.6; }
+
+        .power-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px; margin: 15px 0;
+        }
+        .power-item {
+            background: var(--card-bg);
+            padding: 14px 10px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .power-item:active { transform: scale(0.96); }
+        .power-item.selected { background: rgba(102, 126, 234, 0.2); border-color: #667eea; }
+        .power-icon { font-size: 2em; margin-bottom: 6px; }
+        .power-item span { font-size: 0.75em; color: var(--text-muted); }
+
+        .notification {
+            position: fixed; bottom: 90px;
+            left: 15px; right: 15px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            color: white; font-weight: 600; font-size: 0.9em;
+            z-index: 9999;
+            display: none; text-align: center;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+        .notification.show { display: block; }
+        .notification.success { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .notification.error { background: linear-gradient(135deg, #eb3349, #f45c43); }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px; margin: 15px 0;
+        }
+        .quick-action {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .quick-action:active { transform: scale(0.96); background: rgba(102, 126, 234, 0.15); }
+        .quick-action .qa-icon { font-size: 2em; margin-bottom: 8px; }
+        .quick-action .qa-title { font-size: 0.85em; font-weight: 700; color: white; margin-bottom: 3px; }
+        .quick-action .qa-desc { font-size: 0.7em; color: var(--text-muted); }
+
+        .section-tabs {
+            display: flex; gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .section-tabs::-webkit-scrollbar { display: none; }
+        .section-tab {
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text-muted);
+            font-size: 0.8em; font-weight: 600;
+            cursor: pointer; white-space: nowrap;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .section-tab.active {
+            background: var(--gradient1); color: white;
+            border-color: transparent;
+        }
+
+        .tip-box {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            padding: 14px; margin: 15px 0;
+            font-size: 0.85em;
+            color: #ffc107; line-height: 1.5;
+        }
+        .tip-box strong { display: block; margin-bottom: 4px; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state .empty-icon { font-size: 3em; margin-bottom: 15px; opacity: 0.5; }
+        .empty-state p { font-size: 0.9em; }
+
+        @media (min-width: 600px) {
+            .card-grid { grid-template-columns: repeat(3, 1fr); }
+            .card-grid-3 { grid-template-columns: repeat(4, 1fr); }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+            .power-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (min-width: 900px) {
+            body { padding-bottom: 0; }
+            .bottom-nav { display: none; }
+            .mobile-header { max-width: 900px; margin: 0 auto; border-radius: 0 0 16px 16px; }
+            .section { max-width: 900px; margin: 0 auto; }
+        }
+
+        .schedule-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .schedule-time { font-weight: 700; color: #667eea; font-size: 0.85em; min-width: 50px; }
+        .schedule-desc { font-size: 0.85em; color: var(--text-muted); line-height: 1.3; }
+
+        .selected-tags {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            margin-top: 10px; min-height: 30px;
+        }
+        .selected-tag {
+            background: var(--gradient1); color: white;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.8em; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .selected-tag img {
+            width: 24px; height: 24px;
+            border-radius: 50%; object-fit: cover;
+        }
+        .selected-tag .remove-tag { cursor: pointer; opacity: 0.7; margin-left: 4px; }
+        .selected-tag .remove-tag:hover { opacity: 1; }
+
+        /* Hero Gallery */
+        .hero-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px; margin: 20px 0;
+        }
+        @media (min-width: 600px) {
+            .hero-gallery { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .hero-gallery-item {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            aspect-ratio: 3/4;
+            background: #111;
+        }
+        .hero-gallery-item.selected {
+            border-color: #667eea;
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(102, 126, 234, 0.6);
+        }
+        .hero-gallery-item img {
+            width: 100%; height: 100%;
+            object-fit: cover; display: block;
+        }
+        .hero-gallery-item .hero-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 50px 10px 15px;
+            color: white;
+            font-weight: 700; font-size: 1em;
+            text-align: center;
+        }
+        .hero-check {
+            position: absolute; top: 10px; right: 10px;
+            width: 35px; height: 35px;
+            background: #667eea;
+            border-radius: 50%;
+            display: none;
+            align-items: center; justify-content: center;
+            color: white; font-size: 1.4em;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .hero-gallery-item.selected .hero-check { display: flex; }
+    </style>
+</head>
+<body>
+
+<header class="mobile-header">
+    <div class="logo">🦸 SUPER PARTY</div>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </button>
+</header>
+
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+<nav class="side-menu" id="sideMenu">
+    <div class="side-menu-header">
+        <div class="hero-collage" id="sideHeroCollage"></div>
+        <h3>SuperHero Party</h3>
+        <p>Planejador de Festas</p>
+    </div>
+    <div class="side-menu-list">
+        <div class="side-menu-item active" onclick="showSection('dashboard')"><span class="menu-icon">📊</span> Dashboard</div>
+        <div class="side-menu-item" onclick="showSection('party-info')"><span class="menu-icon">📅</span> Dados da Festa</div>
+        <div class="side-menu-item" onclick="showSection('heroes')"><span class="menu-icon">🦸</span> Super-Heróis</div>
+        <div class="side-menu-item" onclick="showSection('guests')"><span class="menu-icon">👥</span> Convidados</div>
+        <div class="side-menu-item" onclick="showSection('menu')"><span class="menu-icon">🍕</span> Cardápio</div>
+        <div class="side-menu-item" onclick="showSection('decorations')"><span class="menu-icon">🎨</span> Decorações</div>
+        <div class="side-menu-item" onclick="showSection('games')"><span class="menu-icon">🎮</span> Brincadeiras</div>
+        <div class="side-menu-item" onclick="showSection('budget')"><span class="menu-icon">💰</span> Orçamento</div>
+        <div class="side-menu-item" onclick="showSection('invitations')"><span class="menu-icon">💌</span> Convites</div>
+        <div class="side-menu-item" onclick="showSection('shopping')"><span class="menu-icon">🛒</span> Compras</div>
+    </div>
+</nav>
+
+<nav class="bottom-nav">
+    <div class="bottom-nav-item active" onclick="showSection('dashboard')" data-section="dashboard">
+        <span class="nav-icon">🏠</span><span class="nav-label">Início</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showSection('heroes')" data-section="heroes">
+        <span class="nav-icon">🦸</span><span class="nav-label">Heróis</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showSection('guests')" data-section="guests">
+        <span class="nav-icon">👥</span><span class="nav-label">Convidados</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showSection('menu')" data-section="menu">
+        <span class="nav-icon">🍕</span><span class="nav-label">Cardápio</span>
+    </div>
+    <div class="bottom-nav-item more-btn" onclick="toggleMenu()">
+        <span class="nav-icon">☰</span><span class="nav-label">Mais</span>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+        <div class="section-title">📊 Dashboard</div>
+        <p class="section-subtitle">Visão geral do planejamento da sua festa</p>
+        <div class="stats-grid">
+            <div class="stat-card blue"><div class="stat-label">Convidados</div><div class="stat-number" id="stat-guests">0</div></div>
+            <div class="stat-card green"><div class="stat-label">Heróis</div><div class="stat-number" id="stat-heroes">0</div></div>
+            <div class="stat-card red"><div class="stat-label">Orçamento</div><div class="stat-number" id="stat-budget">R$0</div></div>
+            <div class="stat-card gold"><div class="stat-label">Progresso</div><div class="stat-number" id="stat-progress">0%</div></div>
+        </div>
+        <div class="progress-container"><div class="progress-bar" id="progress-bar" style="width:0%">0%</div></div>
+        <div class="section-title" style="font-size:1em; margin-top:25px;">⚡ Ações Rápidas</div>
+        <div class="quick-actions">
+            <div class="quick-action" onclick="showSection('party-info')"><div class="qa-icon">📅</div><div class="qa-title">Dados da Festa</div><div class="qa-desc">Configurar data e local</div></div>
+            <div class="quick-action" onclick="showSection('heroes')"><div class="qa-icon">🦸</div><div class="qa-title">Escolher Heróis</div><div class="qa-desc">Definir tema</div></div>
+            <div class="quick-action" onclick="showSection('guests')"><div class="qa-icon">👥</div><div class="qa-title">Convidados</div><div class="qa-desc">Gerenciar lista</div></div>
+            <div class="quick-action" onclick="showSection('budget')"><div class="qa-icon">💰</div><div class="qa-title">Orçamento</div><div class="qa-desc">Calcular custos</div></div>
+        </div>
+    </section>
+
+    <!-- PARTY INFO -->
+    <section id="party-info" class="section">
+        <div class="section-title">📅 Dados da Festa</div>
+        <div class="form-group"><label>Nome da Festa</label><input type="text" id="party-name" placeholder="Ex: Festa do Pedro"></div>
+        <div class="form-row"><div class="form-group"><label>Data</label><input type="date" id="party-date"></div><div class="form-group"><label>Horário</label><input type="time" id="party-time"></div></div>
+        <div class="form-row"><div class="form-group"><label>Término</label><input type="time" id="party-end-time"></div><div class="form-group"><label>Qtd Convidados</label><input type="number" id="party-qty" placeholder="50"></div></div>
+        <div class="form-group"><label>Local</label><input type="text" id="party-location" placeholder="Endereço completo"></div>
+        <div class="form-group"><label>Tema Principal</label><select id="party-theme"><option value="">Selecione...</option><option value="avengers">🛡️ Vingadores</option><option value="justice-league">⚡ Liga da Justiça</option><option value="spiderman">🕷️ Homem-Aranha</option><option value="batman">🦇 Batman</option><option value="marvel">✨ Marvel</option><option value="dc">💥 DC Comics</option><option value="mixed">🌈 Misto</option></select></div>
+        <div class="form-group"><label>Observações</label><textarea id="party-observations" rows="3" placeholder="Restrições, preferências..."></textarea></div>
+        <button class="btn btn-success" onclick="savePartyInfo()">💾 Salvar Informações</button>
+    </section>
+
+    <!-- HEROES (gerado dinamicamente) -->
+    <section id="heroes" class="section">
+        <div class="section-title">🦸 Super-Heróis</div>
+        <p class="section-subtitle">Clique nas imagens para selecionar os heróis do tema da festa</p>
+        <div class="hero-gallery" id="heroGalleryContainer"></div>
+        <div style="margin-top:20px; background: var(--card-bg); border-radius:14px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:700; color:white;">Selecionados: <span id="selected-heroes-count" style="color:#667eea;">0</span></span>
+                <span style="font-size:0.75em; color:var(--text-muted);">Toque na imagem para selecionar</span>
+            </div>
+            <div class="selected-tags" id="selected-heroes-list"><span style="color:var(--text-muted); font-size:0.8em;">Nenhum herói selecionado</span></div>
+        </div>
+        <div class="section-title" style="font-size:1em; margin-top:25px;">🎨 Paleta de Cores</div>
+        <div class="card-grid-3">
+            <div class="power-item" onclick="selectColor(this, 'blue')"><div class="power-icon" style="background:#3b82f6; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Azul</span></div>
+            <div class="power-item" onclick="selectColor(this, 'red')"><div class="power-icon" style="background:#ef4444; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Vermelho</span></div>
+            <div class="power-item" onclick="selectColor(this, 'green')"><div class="power-icon" style="background:#22c55e; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Verde</span></div>
+            <div class="power-item" onclick="selectColor(this, 'gold')"><div class="power-icon" style="background:#fbbf24; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Dourado</span></div>
+            <div class="power-item" onclick="selectColor(this, 'purple')"><div class="power-icon" style="background:#a855f7; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Roxo</span></div>
+            <div class="power-item" onclick="selectColor(this, 'black')"><div class="power-icon" style="background:#1f2937; width:40px; height:40px; border-radius:50%; margin:0 auto 6px;"></div><span>Preto</span></div>
+        </div>
+    </section>
+
+    <!-- GUESTS -->
+    <section id="guests" class="section">
+        <div class="section-title">👥 Convidados</div>
+        <p class="section-subtitle">Gerencie a lista de convidados</p>
+        <div class="form-group"><label>Nome</label><input type="text" id="guest-name" placeholder="Nome do convidado"></div>
+        <div class="form-row"><div class="form-group"><label>E-mail</label><input type="email" id="guest-email" placeholder="email@email.com"></div><div class="form-group"><label>Telefone</label><input type="tel" id="guest-phone" placeholder="(00) 00000-0000"></div></div>
+        <button class="btn btn-success" onclick="addGuest()">➕ Adicionar Convidado</button>
+        <div class="stats-grid" style="margin-top:20px;"><div class="stat-card green"><div class="stat-label">Confirmados</div><div class="stat-number" id="guests-confirmed">0</div></div><div class="stat-card blue"><div class="stat-label">Pendentes</div><div class="stat-number" id="guests-pending">0</div></div></div>
+        <div class="mobile-table" id="guests-table"></div>
+        <div class="empty-state" id="guests-empty"><div class="empty-icon">👥</div><p>Nenhum convidado adicionado ainda</p></div>
+    </section>
+
+    <!-- MENU (resumido) -->
+    <section id="menu" class="section">
+        <div class="section-title">🍕 Cardápio</div>
+        <div class="section-tabs"><div class="section-tab active" onclick="filterMenu('all', this)">🍽️ Tudo</div><div class="section-tab" onclick="filterMenu('food', this)">🍕 Comidas</div><div class="section-tab" onclick="filterMenu('drink', this)">🥤 Bebidas</div><div class="section-tab" onclick="filterMenu('sweet', this)">🎂 Doces</div></div>
+        <div id="menu-items">
+            <div class="checklist-item" data-type="food" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>🍕 Pizza</span></div>
+            <div class="checklist-item" data-type="food" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>🌭 Cachorro-quente</span></div>
+            <div class="checklist-item" data-type="drink" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>🥤 Refrigerantes</span></div>
+            <div class="checklist-item" data-type="sweet" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>🎂 Bolo temático</span></div>
+        </div>
+        <div class="form-group"><label>Observações</label><textarea id="menu-observations" rows="3" placeholder="Restrições alimentares..."></textarea></div>
+    </section>
+
+    <!-- DECORATIONS -->
+    <section id="decorations" class="section">
+        <div class="section-title">🎨 Decorações</div>
+        <div class="card-grid"><div class="card" onclick="toggleDecoration(this)"><div class="card-check">✓</div><img src="https://images.unsplash.com/photo-1530103862676-de3c9a59aa38?w=300&h=200&fit=crop" class="card-image"><h3>Balões</h3></div><div class="card" onclick="toggleDecoration(this)"><div class="card-check">✓</div><img src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=300&h=200&fit=crop" class="card-image"><h3>Banners</h3></div></div>
+        <div class="section-title" style="font-size:1em; margin-top:25px;">📋 Checklist</div>
+        <div class="checklist-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>Definir paleta de cores</span></div>
+        <div class="checklist-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><span>Comprar balões e hélio</span></div>
+    </section>
+
+    <!-- GAMES -->
+    <section id="games" class="section">
+        <div class="section-title">🎮 Brincadeiras</div>
+        <div class="game-card"><h4>🎯 Treinamento de Super-Herói</h4><p>Circuito de obstáculos com provas de força, agilidade e destreza!</p></div>
+        <div class="game-card"><h4>💥 Pinata de Vilão</h4><p>Pinata em formato de vilão para coletarem doces.</p></div>
+        <div class="section-title" style="font-size:1em; margin-top:25px;">🕐 Cronograma</div>
+        <div class="schedule-item"><div class="schedule-time">14:00</div><div class="schedule-desc">🎉 Chegada dos convidados</div></div>
+        <div class="schedule-item"><div class="schedule-time">14:30</div><div class="schedule-desc">🎯 Treinamento de Super-Herói</div></div>
+        <div class="schedule-item"><div class="schedule-time">15:30</div><div class="schedule-desc">🍕 Lanche</div></div>
+        <div class="schedule-item"><div class="schedule-time">17:00</div><div class="schedule-desc">🎂 Parabéns e bolo</div></div>
+    </section>
+
+    <!-- BUDGET -->
+    <section id="budget" class="section">
+        <div class="section-title">💰 Orçamento</div>
+        <div class="form-row"><div class="form-group"><label>Item</label><input type="text" id="budget-item-name" placeholder="Ex: Decoração"></div><div class="form-group"><label>Valor (R$)</label><input type="number" id="budget-item-value" placeholder="0,00" step="0.01"></div></div>
+        <button class="btn btn-success" onclick="addBudgetItem()">➕ Adicionar Item</button>
+        <div id="budget-list" style="margin-top:15px;"></div>
+        <div class="budget-total"><div class="total-label">Total Estimado</div><div class="total-value" id="budget-total">R$ 0,00</div></div>
+    </section>
+
+    <!-- INVITATIONS -->
+    <section id="invitations" class="section">
+        <div class="section-title">💌 Convites</div>
+        <div class="form-group"><label>Título do Convite</label><input type="text" id="invite-title" value="Você foi convocado para uma missão especial!"></div>
+        <div class="form-row"><div class="form-group"><label>Herói</label><select id="invite-hero"></select></div><div class="form-group"><label>Cor</label><select id="invite-color"><option value="blue">🔵 Azul</option><option value="red">🔴 Vermelho</option><option value="green">🟢 Verde</option><option value="gold">🟡 Dourado</option></select></div></div>
+        <button class="btn btn-primary" onclick="generateInvitation()">🎨 Gerar Convite</button>
+        <div id="invitation-preview" style="display:none;"><div class="invitation-preview"><img id="preview-hero-image" class="hero-image-large" src=""><h2 id="preview-title">Você foi convocado!</h2><p><strong id="preview-name">Festa de Super-Herói</strong><br>📅 <span id="preview-date">--/--/----</span><br>📍 <span id="preview-location">Local a definir</span></p></div><button class="btn btn-success" onclick="sendInvitations()">📧 Enviar Convites</button></div>
+    </section>
+
+    <!-- SHOPPING -->
+    <section id="shopping" class="section">
+        <div class="section-title">🛒 Lista de Compras</div>
+        <div class="form-row"><div class="form-group"><label>Item</label><input type="text" id="shopping-item" placeholder="Ex: Balões vermelhos"></div><div class="form-group"><label>Qtd</label><input type="number" id="shopping-qty" placeholder="0"></div></div>
+        <button class="btn btn-success" onclick="addShoppingItem()">➕ Adicionar Item</button>
+        <div class="section-tabs"><div class="section-tab active" onclick="filterShopping('all', this)">📦 Todos</div><div class="section-tab" onclick="filterShopping('pending', this)">⏳ Pendentes</div><div class="section-tab" onclick="filterShopping('done', this)">✅ Comprados</div></div>
+        <div id="shopping-list"></div>
+        <div class="btn-group"><button class="btn btn-warning btn-sm" onclick="clearShoppingList()">🗑️ Limpar</button><button class="btn btn-primary btn-sm" onclick="exportShoppingList()">📥 Exportar</button></div>
+    </section>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+    // ===================== LISTA DE HERÓIS (SEM FLASH, SEM GOKU, SEM LANTERNA VERDE) =====================
+    // Removidos: Flash, Goku, Green Lantern
+    const HEROES = [
+        { name: "Batman", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/70-batman.jpg" },
+        { name: "Superman", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/644-superman.jpg" },
+        { name: "Spider-Man", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/620-spider-man.jpg" },
+        { name: "Iron Man", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/346-iron-man.jpg" },
+        { name: "Captain America", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/149-captain-america.jpg" },
+        { name: "Hulk", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/332-hulk.jpg" },
+        { name: "Thor", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/659-thor.jpg" },
+        { name: "Wonder Woman", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/720-wonder-woman.jpg" },
+        { name: "Black Widow", img: "https://raw.githubusercontent.com/akabab/superhero-api/0.3.0/api/images/sm/107-black-widow.jpg" }
+    ];
+
+    let selectedHeroes = [];
+    let guests = [];
+    let budgetItems = [];
+
+    // ========== GERAR GALERIA E COLLAGE ==========
+    function buildHeroGallery() {
+        const container = document.getElementById('heroGalleryContainer');
+        if (!container) return;
+        container.innerHTML = HEROES.map(hero => `
+            <div class="hero-gallery-item" data-hero="${hero.name}" onclick="toggleHeroGallery(this, '${hero.name}')">
+                <img src="${hero.img}" alt="${hero.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=${hero.name}'">
+                <div class="hero-check">✓</div>
+                <div class="hero-overlay">${hero.name}</div>
+            </div>
+        `).join('');
+    }
+
+    function buildSideCollage() {
+        const collageDiv = document.getElementById('sideHeroCollage');
+        if (collageDiv) {
+            // Mostra todos os heróis restantes (9 no total)
+            collageDiv.innerHTML = HEROES.map(h => `<img src="${h.img}" alt="${h.name}" onerror="this.src='https://via.placeholder.com/80?text=Hero'">`).join('');
+        }
+    }
+
+    function buildInviteHeroSelect() {
+        const select = document.getElementById('invite-hero');
+        if (select) {
+            select.innerHTML = HEROES.map(hero => `<option value="${hero.img}">${hero.name}</option>`).join('');
+        }
+    }
+
+    // ========== FUNÇÕES DOS HERÓIS ==========
+    function toggleHeroGallery(element, heroName) {
+        const heroData = HEROES.find(h => h.name === heroName);
+        if (!heroData) return;
+        const idx = selectedHeroes.findIndex(h => h.name === heroName);
+        if (idx >= 0) {
+            selectedHeroes.splice(idx, 1);
+            element.classList.remove('selected');
+            showNotification(`${heroName} removido`, 'success');
+        } else {
+            selectedHeroes.push({ name: heroName, img: heroData.img });
+            element.classList.add('selected');
+            showNotification(`${heroName} convocado!`, 'success');
+        }
+        updateHeroesDisplay();
+        saveData();
+        updateDashboard();
+    }
+
+    function updateHeroesDisplay() {
+        document.getElementById('selected-heroes-count').innerText = selectedHeroes.length;
+        const listDiv = document.getElementById('selected-heroes-list');
+        if (selectedHeroes.length === 0) {
+            listDiv.innerHTML = '<span style="color:var(--text-muted); font-size:0.8em;">Nenhum herói selecionado</span>';
+        } else {
+            listDiv.innerHTML = selectedHeroes.map((h, i) => `
+                <span class="selected-tag">
+                    <img src="${h.img}" onerror="this.style.display='none'"> ${h.name}
+                    <span class="remove-tag" onclick="removeHero(${i})">✕</span>
+                </span>
+            `).join('');
+        }
+    }
+
+    function removeHero(index) {
+        const hero = selectedHeroes[index];
+        selectedHeroes.splice(index, 1);
+        document.querySelectorAll('.hero-gallery-item').forEach(item => {
+            if (item.dataset.hero === hero.name) item.classList.remove('selected');
+        });
+        updateHeroesDisplay();
+        saveData();
+        updateDashboard();
+    }
+
+    function selectColor(el, color) { el.classList.toggle('selected'); }
+
+    // ========== GUESTS ==========
+    function addGuest() {
+        const name = document.getElementById('guest-name').value.trim();
+        if (!name) { showNotification('❌ Digite o nome!', 'error'); return; }
+        guests.push({ id: Date.now(), name, email: document.getElementById('guest-email').value, phone: document.getElementById('guest-phone').value, rsvp: 'pending' });
+        renderGuests();
+        document.getElementById('guest-name').value = '';
+        document.getElementById('guest-email').value = '';
+        document.getElementById('guest-phone').value = '';
+        saveData();
+        updateDashboard();
+        showNotification('✅ Convidado adicionado!');
+    }
+
+    function renderGuests() {
+        const table = document.getElementById('guests-table');
+        const empty = document.getElementById('guests-empty');
+        if (guests.length === 0) { table.innerHTML = ''; empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+        table.innerHTML = guests.map(g => `
+            <div class="mobile-table-card">
+                <div class="table-name">${g.name}</div>
+                ${g.email ? `<div class="table-detail">📧 ${g.email}</div>` : ''}
+                ${g.phone ? `<div class="table-detail">📱 ${g.phone}</div>` : ''}
+                <div><span class="status-badge ${g.rsvp}">${g.rsvp === 'confirmed' ? '✅ Confirmado' : g.rsvp === 'declined' ? '❌ Recusou' : '⏳ Pendente'}</span></div>
+                <div class="table-actions">
+                    <button class="btn btn-success btn-sm" onclick="setGuestRsvp(${g.id}, 'confirmed')">✅</button>
+                    <button class="btn btn-warning btn-sm" onclick="setGuestRsvp(${g.id}, 'pending')">⏳</button>
+                    <button class="btn btn-danger btn-sm" onclick="setGuestRsvp(${g.id}, 'declined')">❌</button>
+                    <button class="btn btn-danger btn-sm" onclick="removeGuest(${g.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        updateGuestStats();
+    }
+
+    function setGuestRsvp(id, status) { const g = guests.find(g => g.id === id); if(g) { g.rsvp = status; renderGuests(); saveData(); } }
+    function removeGuest(id) { guests = guests.filter(g => g.id !== id); renderGuests(); saveData(); updateDashboard(); showNotification('🗑️ Convidado removido'); }
+    function updateGuestStats() { document.getElementById('guests-confirmed').innerText = guests.filter(g => g.rsvp === 'confirmed').length; document.getElementById('guests-pending').innerText = guests.filter(g => g.rsvp === 'pending').length; }
+
+    // ========== BUDGET ==========
+    function addBudgetItem() {
+        const name = document.getElementById('budget-item-name').value.trim();
+        const value = parseFloat(document.getElementById('budget-item-value').value);
+        if (!name || isNaN(value) || value <= 0) { showNotification('❌ Preencha item e valor!', 'error'); return; }
+        budgetItems.push({ name, value });
+        renderBudget();
+        document.getElementById('budget-item-name').value = '';
+        document.getElementById('budget-item-value').value = '';
+        saveData();
+        updateDashboard();
+        showNotification('✅ Item adicionado!');
+    }
+    function renderBudget() {
+        const total = budgetItems.reduce((s, i) => s + i.value, 0);
+        document.getElementById('budget-list').innerHTML = budgetItems.map((item, i) => `
+            <div class="budget-item">
+                <span class="item-name">${item.name}</span>
+                <div><span class="item-value">R$ ${item.value.toFixed(2)}</span>
+                <button class="btn btn-danger btn-sm" onclick="removeBudgetItem(${i})">✕</button></div>
+            </div>
+        `).join('');
+        document.getElementById('budget-total').innerHTML = `R$ ${total.toFixed(2)}`;
+    }
+    function removeBudgetItem(i) { budgetItems.splice(i,1); renderBudget(); saveData(); updateDashboard(); }
+
+    // ========== OUTRAS FUNÇÕES ==========
+    function toggleCheck(el) { el.classList.toggle('checked'); updateDashboard(); }
+    function toggleDecoration(el) { el.classList.toggle('selected'); }
+    function filterMenu(type, tab) { document.querySelectorAll('#menu .section-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); document.querySelectorAll('#menu-items .checklist-item').forEach(i => { i.style.display = (type === 'all' || i.dataset.type === type) ? 'flex' : 'none'; }); }
+    function filterShopping(status, tab) { document.querySelectorAll('#shopping .section-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); document.querySelectorAll('#shopping-list .checklist-item').forEach(i => { if (status === 'all') i.style.display = 'flex'; else if (status === 'pending') i.style.display = i.classList.contains('checked') ? 'none' : 'flex'; else i.style.display = i.classList.contains('checked') ? 'flex' : 'none'; }); }
+    function addShoppingItem() { const item = document.getElementById('shopping-item').value.trim(); if (!item) return; const div = document.createElement('div'); div.className = 'checklist-item'; div.onclick = function() { toggleCheck(this); updateDashboard(); }; div.innerHTML = `<div class="check-box">✓</div><span>${item}</span>`; document.getElementById('shopping-list').appendChild(div); document.getElementById('shopping-item').value = ''; showNotification('✅ Item adicionado!'); }
+    function clearShoppingList() { if(confirm('Limpar toda a lista?')) { document.getElementById('shopping-list').innerHTML = ''; showNotification('🗑️ Lista limpa!'); } }
+    function exportShoppingList() { const items = Array.from(document.querySelectorAll('#shopping-list .checklist-item')).map(item => `${item.classList.contains('checked') ? '[✓]' : '[ ]'} ${item.querySelector('span').textContent}`).join('\n'); const blob = new Blob([items], {type: 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lista-compras.txt'; a.click(); showNotification('📥 Lista exportada!'); }
+    function savePartyInfo() { localStorage.setItem('partyInfo', JSON.stringify({ name: document.getElementById('party-name').value, date: document.getElementById('party-date').value, time: document.getElementById('party-time').value, endTime: document.getElementById('party-end-time').value, qty: document.getElementById('party-qty').value, location: document.getElementById('party-location').value, theme: document.getElementById('party-theme').value, observations: document.getElementById('party-observations').value })); showNotification('✅ Informações salvas!'); }
+    function generateInvitation() { const party = JSON.parse(localStorage.getItem('partyInfo') || '{}'); document.getElementById('preview-hero-image').src = document.getElementById('invite-hero').value; document.getElementById('preview-title').innerText = document.getElementById('invite-title').value; document.getElementById('preview-name').innerText = party.name || 'Festa de Super-Herói'; document.getElementById('preview-date').innerText = party.date ? party.date.split('-').reverse().join('/') : '--/--/----'; document.getElementById('preview-location').innerText = party.location || 'Local a definir'; document.getElementById('invitation-preview').style.display = 'block'; showNotification('✅ Convite gerado!'); }
+    function sendInvitations() { if(guests.length === 0) { showNotification('❌ Adicione convidados!', 'error'); return; } showNotification(`📧 Convites enviados para ${guests.length} pessoas!`); }
+
+    // ========== DASHBOARD ==========
+    function updateDashboard() {
+        document.getElementById('stat-guests').innerText = guests.length;
+        document.getElementById('stat-heroes').innerText = selectedHeroes.length;
+        const total = budgetItems.reduce((s,i) => s + i.value, 0);
+        document.getElementById('stat-budget').innerText = `R$${total.toFixed(0)}`;
+        let progress = (selectedHeroes.length>0?20:0) + (guests.length>0?20:0) + (budgetItems.length>0?20:0) + (localStorage.getItem('partyInfo')?15:0) + (document.querySelectorAll('#menu .checklist-item.checked').length>0?15:0) + (document.querySelectorAll('#shopping .checklist-item.checked').length>0?10:0);
+        progress = Math.min(progress, 100);
+        document.getElementById('stat-progress').innerText = `${progress}%`;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+        document.getElementById('progress-bar').innerText = `${progress}%`;
+    }
+
+    // ========== SALVAR/CARREGAR ==========
+    function saveData() { localStorage.setItem('selectedHeroes', JSON.stringify(selectedHeroes)); localStorage.setItem('guests', JSON.stringify(guests)); localStorage.setItem('budgetItems', JSON.stringify(budgetItems)); }
+    function loadData() {
+        const savedHeroes = localStorage.getItem('selectedHeroes'); if(savedHeroes) { selectedHeroes = JSON.parse(savedHeroes); updateHeroesDisplay(); document.querySelectorAll('.hero-gallery-item').forEach(el => { if(selectedHeroes.find(h => h.name === el.dataset.hero)) el.classList.add('selected'); }); }
+        const savedGuests = localStorage.getItem('guests'); if(savedGuests) { guests = JSON.parse(savedGuests); renderGuests(); }
+        const savedBudget = localStorage.getItem('budgetItems'); if(savedBudget) { budgetItems = JSON.parse(savedBudget); renderBudget(); }
+        const party = localStorage.getItem('partyInfo'); if(party) { const p = JSON.parse(party); document.getElementById('party-name').value = p.name || ''; document.getElementById('party-date').value = p.date || ''; document.getElementById('party-time').value = p.time || ''; document.getElementById('party-end-time').value = p.endTime || ''; document.getElementById('party-qty').value = p.qty || ''; document.getElementById('party-location').value = p.location || ''; document.getElementById('party-theme').value = p.theme || ''; document.getElementById('party-observations').value = p.observations || ''; }
+        updateDashboard();
+    }
+
+    // ========== UI ==========
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
+        const navItem = document.querySelector(`.bottom-nav-item[data-section="${sectionId}"]`);
+        if (navItem) navItem.classList.add('active');
+        if (sectionId === 'heroes' && document.querySelectorAll('.hero-gallery-item').length === 0) buildHeroGallery();
+        if (document.getElementById('sideMenu').classList.contains('active')) toggleMenu();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function toggleMenu() { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('menuOverlay').classList.toggle('active'); document.getElementById('hamburgerBtn').classList.toggle('active'); }
+    function showNotification(msg, type='success') { const n = document.getElementById('notification'); n.textContent = msg; n.className = `notification ${type} show`; setTimeout(() => n.classList.remove('show'), 2500); }
+
+    // ========== INIT ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        buildHeroGallery();
+        buildSideCollage();
+        buildInviteHeroSelect();
+        loadData();
+        updateDashboard();
+    });
+</script>
+</body>
+</html>
